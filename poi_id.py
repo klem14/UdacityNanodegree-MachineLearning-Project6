@@ -38,8 +38,7 @@ features_list = [ 'poi','to_messages','from_this_person_to_poi','from_messages',
  'director_fees','deferral_payments','deferred_income','loan_advances'] # You will need to use more features
 
 #Number of features to keep
-k = 12
-
+k = 2
 ### Load the dictionary containing the dataset
 data_dict = pickle.load(open("final_project_dataset.pkl", "r") )
 
@@ -99,7 +98,16 @@ features_list = zip(*features_list)[0]
 #print features_list
 
 features_list = [ 'poi'] + list(features_list)
- 
+
+#features selection for Decision Tree (built from features_Importances_ attribute returned)
+features_list = [ 'poi','expenses','to_poi_percent']
+#features_list = [ 'poi','exercised_stock_options','to_poi_percent', 'expenses','shared_receipt_with_poi','bonus']
+
+
+
+#Resetting data on the new features_list
+data = featureFormat(my_dataset, features_list, sort_keys = False)
+labels, features = targetFeatureSplit(data) 
 
 
 ##Split data into train and test
@@ -118,7 +126,7 @@ anova_filter = SelectKBest(f_classif, k=k)
 
 ##First model
 #from sklearn.naive_bayes import GaussianNB
-#algo = GaussianNB()    # Provided to give you a starting point. Try a varity of classifiers.
+#algo = GaussianNB()
 
 ##Second model
 #from sklearn.neighbors import KNeighborsClassifier
@@ -135,6 +143,8 @@ algo = DecisionTreeClassifier(criterion ='entropy',splitter='best',min_samples_s
 clf = make_pipeline(anova_filter,algo)
 clf.fit(features_train,labels_train)
 
+#print algo.feature_importances_
+
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script.
 ### Because of the small size of the dataset, the script uses stratified
@@ -148,7 +158,7 @@ clf.fit(features_train,labels_train)
 #from sklearn.grid_search import GridSearchCV
 ###params = dict(selectkbest__k=[5, 6, 7, 8, 9])
 ##params = dict(selectkbest__k=[5, 6, 7, 8, 9],kneighborsclassifier__n_neighbors=[5, 8, 10, 15],kneighborsclassifier__p=[1, 2, 3])
-#params = dict(selectkbest__k=[5,6,7,8,9,10,11,12,14],decisiontreeclassifier__min_samples_split=[2,4,6,8,10],decisiontreeclassifier__max_depth=[2,4,6,8,10],decisiontreeclassifier__splitter=['random','best'])
+#params = dict(decisiontreeclassifier__min_samples_split=[2,4,6,8,10],decisiontreeclassifier__max_depth=[2,4,6,8,10],decisiontreeclassifier__splitter=['random','best'],decisiontreeclassifier__criterion =['gini','entropy'])
 
 #from sklearn.cross_validation import StratifiedShuffleSplit
 #cv = StratifiedShuffleSplit(labels, n_iter=100, random_state=42)
@@ -156,6 +166,7 @@ clf.fit(features_train,labels_train)
 #grid_search = GridSearchCV(clf, param_grid=params,cv=cv,scoring='f1')
 #grid_search.fit(features,labels)
 
+#print features_list
 #print("Best parameters set found on development set:")
 #print (grid_search.best_estimator_)
 #print "Best F1 score found: {:4f}".format(grid_search.best_score_)
